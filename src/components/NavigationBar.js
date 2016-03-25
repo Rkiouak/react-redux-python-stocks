@@ -1,5 +1,5 @@
 import React from 'react'
-import { Router, Route, Link } from 'react-router'
+import { Link } from 'react-router'
 
 const blue = '#337ab7'
 const light = '#fff'
@@ -20,7 +20,6 @@ styles.link = {
 
 styles.activeLink = {
   padding: 11,
-  color: light,
   fontWeight: 200,
   background: light,
   color: blue
@@ -35,24 +34,24 @@ class NavigationBar extends React.Component {
     }
   }
 
-  constructor(props, context) {
+  constructor (props, context) {
     super(props, context)
     this.logOut = this.logOut.bind(this)
   }
 
-  logOut() {
-    alert('log out')
+  logOut () {
+    alert ('log out')
   }
 
-  render() {
+  render () {
     const { user } = this.props
 
     return (
-      <div style={styles.wrapper}>
-          <Link to="/" style={styles.link} activeStyle={styles.activeLink}>Stocks</Link>{' '}
-          <Link to="/resume">Resume</Link>
-          <Link style={styles.link} to="/profile">{user.name}</Link> <button onClick={this.logOut}>log out</button>
-      </div>
+        <div style={styles.wrapper}>
+            <Link to="/" style={styles.link} activeStyle={styles.activeLink}>Stocks</Link>{' '}
+            {/*<Link to="/resume">Resume</Link>*/}
+            <Link style={styles.link} to="/profile">{user.name}</Link> <button onClick={this.logOut}>log out</button>
+        </div>
     )
   }
 }

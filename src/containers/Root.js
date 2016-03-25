@@ -1,6 +1,8 @@
 import React, { PropTypes } from 'react'
 import { Provider } from 'react-redux'
-import { Router } from 'react-router'
+import {Router, browserHistory} from 'react-router'
+import NavigationBar from '../components/NavigationBar'
+import routes from '../routes/index'
 
 export default class Root extends React.Component {
   static propTypes = {

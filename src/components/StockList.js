@@ -1,54 +1,58 @@
-import React from "react";
-import request from "superagent";
-import { Button, ButtonToolbar, Accordion, Panel, Table, PageHeader } from 'react-bootstrap';
-import {VictoryChart, VictoryLine, VictoryAxis} from 'victory';
-import NavigationBar from './NavigationBar';
+import React from 'react'
+import request from 'superagent'
+import { Button, ButtonToolbar, Panel, Table } from 'react-bootstrap'
+import {VictoryChart, VictoryLine, VictoryAxis} from 'victory'
+import NavigationBar from './NavigationBar'
 
 var StockList = React.createClass({
 
-  getInitialState: function() {
-    return {selectedStockSymbol:"",
-            selectedStockInfo:{},
-            stocks:["AAPL", "XOM", "MSFT", "GOOGL", "GOOG", "WFC", "WMT",
-            "GE", "PG", "JPM", "VZ", "KO", "PFE", "T", "ORCL", "BAC", "MMM",
-            "ABT", "ABBV", "ATVI", "ADBE", "ADT", "AAP", "STT", "YHOO"],
-            selectedStockHistorical:[],
-            haveStockData:false}
+  getInitialState: function () {
+    return {selectedStockSymbol: '',
+            selectedStockInfo: {},
+            stocks: ['AAPL', 'XOM', 'MSFT', 'GOOGL', 'GOOG', 'WFC', 'WMT',
+            'GE', 'PG', 'JPM', 'VZ', 'KO', 'PFE', 'T', 'ORCL', 'BAC', 'MMM',
+            'ABT', 'ABBV', 'ATVI', 'ADBE', 'ADT', 'AAP', 'STT', 'YHOO'],
+            selectedStockHistorical: [],
+            haveStockData: false}
   },
 
-  removeSymbol: function(stockToRemove) {
-    var stocks = this.state.stocks.filter(stock=>stock!=stockToRemove);
-    this.setState({stocks:stocks});
+  removeSymbol: function (stockToRemove) {
+    var stocks = this.state.stocks.filter((stock) => (stock !== stockToRemove))
+    this.setState({stocks: stocks})
   },
 
-  getSymbolDetails: function(stock) {
-    this.setState({selectedStockSymbol:stock, haveStockData:false});
-    if(this.state.selectedStockInfo.symbol!==stock){
-      request.get("/"+stock).send().end( function (error, resp, body) {
-        if(!error && resp.statusCode ==200){
-          resp.body["chart"]=resp.body["chart"].map((data)=>{return {'x':new Date(data.x), 'Adj Close':data['Adj Close'], 'bol_upper':data['bol_upper'], 'bol_lower':data['bol_lower']}});
-          this.setState({selectedStockInfo:resp.body?resp.body:{}, haveStockData:true});
-          this.setState({selectedStockHistorical:{data:resp.body["chart"], stock:stock}});
+  getSymbolDetails: function (stock) {
+    this.setState({selectedStockSymbol: stock, haveStockData: false})
+    if (this.state.selectedStockInfo.symbol !== stock) {
+      var path = '/' + stock
+      request.get(path).send().end(function (error, resp, body) {
+        if (!error && resp.statusCode === 200) {
+          resp.body['chart'] = resp.body['chart'].map(
+            (data) => {
+              return {'x': new Date(data.x),
+                       'Adj Close': data['Adj Close'],
+                       'bol_upper': data['bol_upper'],
+                       'bol_lower': data['bol_lower'] } })
+          this.setState({selectedStockInfo: resp.body ? resp.body : {}, haveStockData: true})
+          this.setState({selectedStockHistorical: {data: resp.body['chart'], stock: stock}})
+        } else {
+          alert('Http request to yahoo threw error')
         }
-        else{
-          alert('Http request to yahoo threw error');
-        }
-      }.bind(this));
-    }
-    else{
-      return;
+      }.bind(this))
+    } else {
+      return
     }
   },
 
-  handleBuy: function(){
+  handleBuy: function () {
     event.preventDefault();
     var stocks = this.state.stocks.slice(0)
-    stocks.push(this.refs.buySymbol.value.trim());
-    this.setState({stocks:stocks});
-    this.refs.buySymbol.value="";
+    stocks.push(this.refs.buySymbol.value.trim())
+    this.setState({stocks: stocks})
+    this.refs.buySymbol.value = ''
   },
 
-  render(){
+  render () {
 
     return (
       <div>
@@ -60,7 +64,7 @@ var StockList = React.createClass({
           this.state.haveStockData&&
           this.state.stocks.filter(stock=>stock==this.state.selectedStockSymbol).length>0?(
           <div>
-            <Button bsStyle="danger" bsSize="xsmall"
+            <Button bsStyle='danger' bsSize='xsmall'
             onClick={()=>{this.removeSymbol(this.state.selectedStockSymbol)}}
             style={{marginBottom:'4px'}}>Sell</Button>
             <h5>No Such Stock</h5>
@@ -68,7 +72,7 @@ var StockList = React.createClass({
         this.state.stocks.map((stock, count) =>
         this.state.selectedStockInfo.symbol==stock?(
           <Panel header={stock} key={stock} style={{height:'100%', width:'67%', float:'left', fontFamily:'Abril Fatface'}}>
-                <Button bsStyle="danger" bsSize="xsmall"
+                <Button bsStyle='danger' bsSize='xsmall'
                   onClick={()=>{this.removeSymbol(stock)}}
                   style={{marginBottom:'4px'}}>Sell</Button>
                   <h6><small>(adjusted close price over the past 20 Days)</small></h6>
@@ -107,62 +111,62 @@ var StockList = React.createClass({
                        this.state.selectedStockInfo.upperLimit+(this.state.selectedStockInfo.std*1.3)
                      ]
                    }}
-                   scale={{'x':"time"}}
+                   scale={{'x':'time'}}
                    >
                    <VictoryLine
                      style={{  height:'100%',
                                             wdith:'100%',data:{strokeWidth: 2}}}
                      data={this.state.selectedStockHistorical.data.map((data)=>{return {'x':data.x, 'y':data['Adj Close']}})}
-                     label={"adj close"}
+                     label={'adj close'}
                    />
                    <VictoryLine
                      style={{
                        height:'100%',
                        wdith:'100%',
                        data: {
-                         stroke: "#B0171F",
+                         stroke: '#B0171F',
                          strokeWidth: 1,
-                         ":hover": {stroke: "#FF0000"}
+                         ':hover': {stroke: '#FF0000'}
                        }
                      }}
                      data={this.state.selectedStockHistorical.data.map(
                        (data)=>{return {'x':data.x, 'y':data['bol_upper']}}
                      )}
-                     label="upr bnd"
+                     label='upr bnd'
                    />
                    <VictoryLine
                      style={{
                        height:'100%',
                        width:'100%',
                        data: {
-                         stroke: "#6666ff",
+                         stroke: '#6666ff',
                          strokeWidth: 1,
-                         ":hover": {stroke: "#b2b2ff"}
+                         ':hover': {stroke: '#b2b2ff'}
                        }
                      }}
                      data={this.state.selectedStockHistorical.data.map(
                        (data)=>{return {'x':data.x, 'y':data['bol_lower']}}
                      )}
-                     label="lwr bnd"
+                     label='lwr bnd'
                    />
                     <VictoryAxis
-                      label="Time"
+                      label='Time'
                       tickCount={4}
-                      orientation="bottom"
+                      orientation='bottom'
                       tickFormat={(date)=>date.toLocaleDateString()}
                       />
                       <VictoryAxis dependentAxis
-                        label="Ask"
+                        label='Ask'
                       />
-                  </VictoryChart>):""}
-            </Panel>):""))}
+                  </VictoryChart>):''}
+            </Panel>):''))}
             <div style={{float:'right', width:'31%'}}>
-              <input type="text" ref="buySymbol"></input>
-              <Button type="submit" style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize="xsmall" bsStyle="success">Buy</Button>
+              <input type='text' ref='buySymbol'></input>
+              <Button type='submit' style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize='xsmall' bsStyle='success'>Buy</Button>
               <br/>
               <h6 style={{fontFamily:'Abril Fatface'}}>Select:</h6><ButtonToolbar>
                 {this.state.stocks.map(stock =>
-                  <Button bsSize="small" style={{marginBottom:'2px'}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
+                  <Button bsSize='small' style={{marginBottom:'2px'}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
                 )}
               </ButtonToolbar>
             </div>
