@@ -1,4 +1,8 @@
+//Koa Server imports
 import Koa from 'koa'
+import route from 'koa-route'
+import request from 'koa-request'
+
 import convert from 'koa-convert'
 import webpack from 'webpack'
 import webpackConfig from '../build/webpack.config'
@@ -13,6 +17,19 @@ import webpackHMRMiddleware from './middleware/webpack-hmr'
 const debug = _debug('app:server')
 const paths = config.utils_paths
 const app = new Koa()
+
+app.use(route.get('/api/:symbol',
+  function*(symbol) {
+
+    var options = {
+      url: 'http://www.rkiouak.com/' + symbol,
+      headers: {'User-Agent': 'request'}
+    };
+    var response = yield request(options);
+    var body = JSON.parse(response.body);
+
+    this.body = body
+  }));
 
 // Enable koa-proxy if it has been enabled in the config.
 if (config.proxy && config.proxy.enabled) {

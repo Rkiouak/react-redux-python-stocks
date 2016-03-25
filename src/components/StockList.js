@@ -24,7 +24,7 @@ var StockList = React.createClass({
   getSymbolDetails: function (stock) {
     this.setState({selectedStockSymbol: stock, haveStockData: false})
     if (this.state.selectedStockInfo.symbol !== stock) {
-      var path = '/' + stock
+      var path = '/api/' + stock
       request.get(path).send().end(function (error, resp, body) {
         if (!error && resp.statusCode === 200) {
           resp.body['chart'] = resp.body['chart'].map(

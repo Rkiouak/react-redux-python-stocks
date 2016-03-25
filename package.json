@@ -129,6 +129,8 @@
     "karma-mocha-reporter": "^2.0.0",
     "karma-phantomjs-launcher": "^1.0.0",
     "karma-webpack-with-fast-source-maps": "^1.9.2",
+    "koa-request": "^1.0.0",
+    "koa-route": "^2.4.2",
     "mocha": "^2.2.5",
     "node-sass": "^3.3.3",
     "nodemon": "^1.8.1",
