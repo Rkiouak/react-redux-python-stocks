@@ -35,11 +35,17 @@ webpackConfig.entry = {
 // ------------------------------------
 // Bundle Output
 // ------------------------------------
-webpackConfig.output = {
+/*webpackConfig.output = {
   filename: `[name].[${config.compiler_hash_type}].js`,
   path: paths.base(config.dir_dist),
   publicPath: config.compiler_public_path
+}*/
+webpackConfig.output = {
+  filename: `[name].js`,
+  path: paths.base(config.dir_dist),
+  publicPath: config.compiler_public_path
 }
+
 
 // ------------------------------------
 // Plugins
@@ -89,7 +95,7 @@ if (!__TEST__) {
 // ------------------------------------
 // Pre-Loaders
 // ------------------------------------
-webpackConfig.module.preLoaders = [{
+/*webpackConfig.module.preLoaders = [{
   test: /\.(js|jsx)$/,
   loader: 'eslint',
   exclude: /node_modules/
@@ -98,7 +104,7 @@ webpackConfig.module.preLoaders = [{
 webpackConfig.eslint = {
   configFile: paths.base('.eslintrc'),
   emitWarning: __DEV__
-}
+}*/
 
 // ------------------------------------
 // Loaders
