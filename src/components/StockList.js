@@ -9,11 +9,21 @@ var StockList = React.createClass({
   getInitialState: function () {
     return {selectedStockSymbol: '',
             selectedStockInfo: {},
-            stocks: ['AAPL', 'XOM', 'MSFT', 'GOOGL', 'GOOG', 'WFC', 'WMT',
-            'GE', 'PG', 'JPM', 'VZ', 'KO', 'PFE', 'T', 'ORCL', 'BAC', 'MMM',
-            'ABT', 'ABBV', 'ATVI', 'ADBE', 'ADT', 'AAP', 'STT', 'YHOO'],
+            stocks: [],
             selectedStockHistorical: [],
-            haveStockData: false}
+            haveStockData: false,
+            userId:'1'}
+  },
+  componentDidMount: function () {
+    request.get('/api/portfolio/'+this.state.userId).send().end(function(error, resp, body){
+      if(!error && resp.statusCode === 200) {
+        console.log(resp)
+        this.setState({stocks:resp.body.results})
+      } else {
+        console.log('error retrieving portfolio')
+      }
+
+    }.bind(this))
   },
 
   removeSymbol: function (stockToRemove) {
@@ -36,7 +46,7 @@ var StockList = React.createClass({
           this.setState({selectedStockInfo: resp.body ? resp.body : {}, haveStockData: true})
           this.setState({selectedStockHistorical: {data: resp.body['chart'], stock: stock}})
         } else {
-          alert('Http request to yahoo threw error')
+          console.log('Http request to yahoo threw error')
         }
       }.bind(this))
     } else {
@@ -53,7 +63,7 @@ var StockList = React.createClass({
   },
 
   render () {
-
+    console.log("stocks: ", this.state.stocks)
     return (
       <div>
         <NavigationBar/>
@@ -85,6 +95,10 @@ var StockList = React.createClass({
                       <th>Standard Deviation</th>
                       <th>Lower 2 STD Boundary</th>
                       <th>Upper 2 STD Boundary</th>
+                      <th>Yesterday's Price Change (Percent)</th>
+                      <th>Yesterday's Price Move (Absolute)</th>
+                      <th>Yesterday's Volume</th>
+                      <th>Average Volume</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -95,6 +109,10 @@ var StockList = React.createClass({
                       <td>{Math.round(this.state.selectedStockInfo.std*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.lowerLimit*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.upperLimit*100)/100}</td>
+                      <td>{Math.round(this.state.selectedStockInfo.yesterdayPriceMove*100)/100}</td>
+                      <td>{Math.round(this.state.selectedStockInfo.yesterdayPriceMovePercent*100)/100}</td>
+                      <td>{Math.round(this.state.selectedStockInfo.lastDayVolume*100)/100}</td>
+                      <td>{Math.round(this.state.selectedStockInfo.avgVolume*100)/100}</td>
                     </tr>
                   </tbody>
                 </Table>
@@ -115,7 +133,7 @@ var StockList = React.createClass({
                    >
                    <VictoryLine
                      style={{  height:'100%',
-                                            wdith:'100%',data:{strokeWidth: 2}}}
+                                            width:'100%',data:{strokeWidth: 2}}}
                      data={this.state.selectedStockHistorical.data.map((data)=>{return {'x':data.x, 'y':data['Adj Close']}})}
                      label={'adj close'}
                    />
@@ -160,7 +178,7 @@ var StockList = React.createClass({
                       />
                   </VictoryChart>):''}
             </Panel>):''))}
-            <div style={{float:'right', width:'31%'}}>
+            <div style={{float:'top', width:'31%'}}>
               <input type='text' ref='buySymbol'></input>
               <Button type='submit' style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize='xsmall' bsStyle='success'>Buy</Button>
               <br/>

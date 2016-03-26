@@ -4,6 +4,7 @@ import pandas.io.data as web
 import pandas as pd
 import numpy
 from flask_sqlalchemy import SQLAlchemy
+import json
 
 app = Flask(__name__)
 #app.config.from_envvar('STOCKS_APP_PROPERTIES')
@@ -11,6 +12,7 @@ app = Flask(__name__)
 def show_stock_basic_stats(symbol):
     start = datetime.now() - timedelta(days=100)
     stock = web.DataReader(symbol, 'yahoo', start, None)
+    #print(stock)
     resp = dict()
     resp['mean']=numpy.mean(stock['Adj Close'])
     resp['std']=numpy.std(stock['Adj Close'])
@@ -18,6 +20,10 @@ def show_stock_basic_stats(symbol):
     resp['lowerLimit']=resp['mean']-(resp['std']*2)
     resp['symbol']=symbol
     resp['price']=stock['Adj Close'][-1]
+    resp['lastDayVolume']=stock['Volume'][-1]
+    resp['avgVolume']=numpy.mean(stock['Volume'])
+    resp['yesterdayPriceMove']=stock['Adj Close'][-1]-stock['Adj Close'][-2]
+    resp['yesterdayPriceMovePercent']=resp['yesterdayPriceMove']/stock['Adj Close'][-2]
     #resp['Adj Close']=[{'x':pd.to_datetime(x).strftime('%Y-%m-%d'), 'y':stock.ix[pd.to_datetime(x).strftime('%Y-%m-%d')]['Adj Close']} for x in stock.index]
 
     stock['Date'] =  pd.to_datetime( stock.index)
@@ -34,7 +40,13 @@ def show_stock_basic_stats(symbol):
      'bol_upper':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['Bol_upper']),
      'bol_lower':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['Bol_lower'])} for x in stock.index[0:21]]
     resp['chart'].reverse()
+    #print(resp)
     return jsonify(resp)
+
+@app.route('/api/portfolio/<id>')
+def get_portfolio_by_id(id):
+    print('in route')
+    return jsonify(dict({'results':['AMZN', 'NLFX', 'PFE', 'WFC']}))
 
 @app.route('/')
 def send_welcome():
@@ -53,6 +65,6 @@ def send_css():
     return send_from_directory('dist', 'app.32dc9945fd902da8ed2cccdc8703129f.css')
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=int("3000"))
-    #app.debug = True
-    #app.run()
+    #app.run(host="0.0.0.0", port=int("3000"))
+    app.debug = True
+    app.run()
