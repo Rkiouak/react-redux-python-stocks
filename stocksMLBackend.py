@@ -12,8 +12,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_envvar('STOCKS_APP_PROPERTIES')
     db = SQLAlchemy(app)
-    mail = Mail(app)                                # Initialize Flask-Mail
-
+    mail = Mail(app)
 
     class User(db.Model, UserMixin):
         id = db.Column(db.Integer, primary_key=True)
@@ -105,12 +104,12 @@ def create_app():
         return jsonify(resp)
 
     @app.route('/api/portfolio', methods=['GET'])
-    @login_required                                 # Use of @login_required decorator
+    @login_required
     def get_portfolio_by_id():
         return jsonify(dict({'results':[x.symbol for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
 
     @app.route('/api/portfolio', methods=['POST'])
-    @login_required                                 # Use of @login_required decorator
+    @login_required
     def update_portfolio_by_id():
         if request.json['action']=='buy':
             newStock = Stock(request.json['symbol'], 0, 0, current_user.id)
@@ -124,7 +123,7 @@ def create_app():
 
 
     @app.route('/')
-    @login_required                                 # Use of @login_required decorator
+    @login_required
     def send_welcome():
         return send_from_directory('dist', 'index.html')
 
