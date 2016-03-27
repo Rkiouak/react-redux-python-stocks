@@ -89,9 +89,9 @@ var StockList = React.createClass({
           <Button type='submit' style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize='xsmall' bsStyle='success'>Buy</Button>
           <br/>
           <h6 style={{fontFamily:'Abril Fatface'}}>Select:</h6><ButtonToolbar>
-            {this.state.stocks.map(stock =>
+            {this.state.stocks.length>0?(this.state.stocks.map(stock =>
               <Button bsSize='small' style={{marginBottom:'2px'}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
-            )}
+            )):'Enter a stock symbol and click \'Buy\'.'}
           </ButtonToolbar>
         </div>
         {
