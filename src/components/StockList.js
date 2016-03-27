@@ -11,11 +11,10 @@ var StockList = React.createClass({
             selectedStockInfo: {},
             stocks: [],
             selectedStockHistorical: [],
-            haveStockData: false,
-            userId:'1'}
+            haveStockData: false}
   },
   componentDidMount: function () {
-    request.get('/api/portfolio/'+this.state.userId).send().end(function(error, resp, body){
+    request.get('/api/portfolio').send().end(function(error, resp, body){
       if(!error && resp.statusCode === 200) {
         console.log(resp)
         this.setState({stocks:resp.body.results})
@@ -50,7 +49,7 @@ var StockList = React.createClass({
   },
 
   removeSymbol: function (stockToRemove) {
-    request.post('/api/portfolio/'+this.state.userId)
+    request.post('/api/portfolio')
     .send({'action':'sell', 'symbol':stockToRemove})
         .end(function (error, resp, body) {
           if(!error && resp.statusCode === 200) {
@@ -65,7 +64,7 @@ var StockList = React.createClass({
 
   handleBuy: function () {
     event.preventDefault();
-    request.post('/api/portfolio/'+this.state.userId)
+    request.post('/api/portfolio')
     .send({'action':'buy', 'symbol':this.refs.buySymbol.value.trim()})
         .end(function (error, resp, body) {
           if(!error && resp.statusCode === 200) {

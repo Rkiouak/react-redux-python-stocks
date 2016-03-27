@@ -4,6 +4,6 @@ import CoreLayout from 'layouts/CoreLayout/CoreLayout'
 import StockList from 'components/StockList'
 
 export default (store) => (
-  <Route path="/" component={StockList}>
+  <Route path="/stocks" component={StockList}>
   </Route>
 )
