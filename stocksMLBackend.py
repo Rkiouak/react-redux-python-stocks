@@ -47,7 +47,7 @@ def create_app():
         symbol = db.Column(db.String(16), primary_key=True)
         sharesOwned = db.Column(db.String(50))
         averagePricePaid = db.Column(db.Numeric(precision=2))
-        user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+        user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
 
         def __init__(self, symbol, sharesOwned, averagePricePaid, user_id):
             self.symbol=symbol
@@ -70,12 +70,13 @@ def create_app():
     @app.route('/api/<symbol>')
     @login_required                                 # Use of @login_required decorator
     def show_stock_basic_stats(symbol):
-        start = datetime.now() - timedelta(days=100)
+        start = datetime.now() - timedelta(days=125)
         stock = web.DataReader(symbol, 'yahoo', start, None)
-        #print(stock)
         resp = dict()
-        resp['mean']=numpy.mean(stock['Adj Close'])
-        resp['std']=numpy.std(stock['Adj Close'])
+        resp['mean']=numpy.mean(stock['Adj Close'][-20:])
+        resp['longMean']=numpy.mean(stock['Adj Close'])
+        resp['std']=numpy.std(stock['Adj Close'][-20:])
+        resp['longStd']=numpy.std(stock['Adj Close'])
         resp['upperLimit']=resp['mean']+(resp['std']*2)
         resp['lowerLimit']=resp['mean']-(resp['std']*2)
         resp['symbol']=symbol
@@ -90,17 +91,20 @@ def create_app():
         temp_data_set = stock.sort('Date',ascending = True ) #sort to calculate the rolling mean
         temp_data_set['20d_ma'] = [float(x) for x in pd.rolling_mean(temp_data_set['Adj Close'], window=20)]
         temp_data_set['50d_ma'] = [float(x) for x in pd.rolling_mean(temp_data_set['Adj Close'], window=50)]
+        #temp_data_set['200d_ma'] = [float(x) for x in pd.rolling_mean(temp_data_set['Adj Close'], window=200)]
         temp_data_set['Bol_upper'] = [float(x) for x in pd.rolling_mean(temp_data_set['Adj Close'], window=20) + 2* pd.rolling_std(temp_data_set['Adj Close'], 20, min_periods=20)]
         temp_data_set['Bol_lower'] = [float(x) for x in pd.rolling_mean(temp_data_set['Adj Close'], window=20) - 2* pd.rolling_std(temp_data_set['Adj Close'], 20, min_periods=20)]
         temp_data_set['Bol_BW'] = [float(x) for x in ((temp_data_set['Bol_upper'] - temp_data_set['Bol_lower'])/temp_data_set['20d_ma'])*100]
         temp_data_set['20d_exma'] = [float(x) for x in pd.ewma(temp_data_set['Adj Close'], span=20)]
         temp_data_set['50d_exma'] = [float(x) for x in pd.ewma(temp_data_set['Adj Close'], span=50)]
         stock = temp_data_set.sort_index(ascending = False ) #reverse back to original
-        resp['chart']=[{'x':pd.to_datetime(x).strftime('%Y-%m-%d'), 'Adj Close':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['Adj Close']), '20d_ma':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['20d_ma']),
+        resp['chart']=[{'x':pd.to_datetime(x).strftime('%Y-%m-%d'),
+         'Adj Close':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['Adj Close']),
+          '20d_ma':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['20d_ma']),
+          '50d_ma':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['50d_ma']),
          'bol_upper':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['Bol_upper']),
          'bol_lower':float(stock[pd.to_datetime(x).strftime('%Y-%m-%d')]['Bol_lower'])} for x in stock.index[0:21]]
         resp['chart'].reverse()
-        #print(resp)
         return jsonify(resp)
 
     @app.route('/api/portfolio', methods=['GET'])

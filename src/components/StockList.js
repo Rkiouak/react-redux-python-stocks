@@ -36,7 +36,9 @@ var StockList = React.createClass({
               return {'x': new Date(data.x),
                        'Adj Close': data['Adj Close'],
                        'bol_upper': data['bol_upper'],
-                       'bol_lower': data['bol_lower'] } })
+                       'bol_lower': data['bol_lower'],
+                       '20d_ma': data['20d_ma'],
+                       '50d_ma': data['50d_ma']} })
           this.setState({selectedStockInfo: resp.body ? resp.body : {}, haveStockData: true})
           this.setState({selectedStockHistorical: {data: resp.body['chart'], stock: stock}})
         } else {
@@ -116,9 +118,10 @@ var StockList = React.createClass({
                     <tr>
                       <th>Symbol</th>
                       <th>Price</th>
-                      <th>Mean</th>
-                      <th>Standard Deviation</th>
-                      <th>Lower 2 STD Boundary</th>
+                      <th>20 Day Mean</th>
+                      <th>125 Day Mean</th>
+                      <th>20 Day Standard Deviation</th>
+                      <th>125 Day Standard Deviation</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -126,14 +129,16 @@ var StockList = React.createClass({
                       <td>{this.state.selectedStockInfo.symbol}</td>
                       <td>{Math.round(this.state.selectedStockInfo.price * 100) /100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.mean*100)/100}</td>
+                      <td>{Math.round(this.state.selectedStockInfo.longMean*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.std*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.lowerLimit*100)/100}</td>
+                      <td>{Math.round(this.state.selectedStockInfo.longStd*100)/100}</td>
                     </tr>
                   </tbody>
                 </Table>
                 <Table bordered style={{fontFamily:'Arial', height:'100%',width:'100%'}}>
                   <thead>
                     <tr>
+                      <th>Lower 2 STD Boundary</th>
                       <th>Upper 2 STD Boundary</th>
                       <th>Yesterday's Price Change (Percent)</th>
                       <th>Yesterday's Price Move (Absolute)</th>
@@ -143,6 +148,7 @@ var StockList = React.createClass({
                   </thead>
                   <tbody>
                     <tr>
+                      <td>{Math.round(this.state.selectedStockInfo.lowerLimit*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.upperLimit*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.yesterdayPriceMove*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.yesterdayPriceMovePercent*100)/100}</td>
@@ -159,9 +165,8 @@ var StockList = React.createClass({
                     height={'275'}
                     width={'620'}
                     domain={{'x':[this.state.selectedStockHistorical.data[0].x, this.state.selectedStockHistorical.data[this.state.selectedStockHistorical.data.length-1].x],
-                    'y':[this.state.selectedStockInfo.lowerLimit-
-                      (this.state.selectedStockInfo.std*1.3),
-                       this.state.selectedStockInfo.upperLimit+(this.state.selectedStockInfo.std*1.3)
+                    'y':[this.state.selectedStockInfo.lowerLimit-(this.state.selectedStockInfo.longStd*1.70),
+                       this.state.selectedStockInfo.upperLimit+(this.state.selectedStockInfo.longStd*1.70)
                      ]
                    }}
                    scale={{'x':'time'}}
@@ -210,6 +215,36 @@ var StockList = React.createClass({
                       />
                       <VictoryAxis dependentAxis
                         label='Ask'
+                      />
+                      <VictoryLine
+                        style={{
+                          height:'100%',
+                          wdith:'100%',
+                          data: {
+                            stroke: '#1F6E51',
+                            strokeWidth: 1,
+                            ':hover': {stroke: '#FF0000'}
+                          }
+                        }}
+                        data={this.state.selectedStockHistorical.data.map(
+                          (data)=>{return {'x':data.x, 'y':data['50d_ma']}}
+                        )}
+                        label='50d ma'
+                      />
+                      <VictoryLine
+                        style={{
+                          height:'100%',
+                          wdith:'100%',
+                          data: {
+                            stroke: '#ffcc66',
+                            strokeWidth: 1,
+                            ':hover': {stroke: '#FF0000'}
+                          }
+                        }}
+                        data={this.state.selectedStockHistorical.data.map(
+                          (data)=>{return {'x':data.x, 'y':data['20d_ma']}}
+                        )}
+                        label='20d ma'
                       />
                   </VictoryChart>):''}
             </Panel>):''))}
