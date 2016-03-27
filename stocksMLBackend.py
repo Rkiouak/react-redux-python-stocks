@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 import pandas.io.data as web
 import pandas as pd
 import numpy
@@ -7,7 +7,39 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 
 app = Flask(__name__)
-#app.config.from_envvar('STOCKS_APP_PROPERTIES')
+app.config.from_envvar('STOCKS_APP_PROPERTIES')
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True)
+    email = db.Column(db.String(120), unique=True)
+
+    def __init__(self, username, email):
+        self.username = username
+        self.email = email
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+class Stock(db.Model):
+    symbol = db.Column(db.String(16), primary_key=True)
+    sharesOwned = db.Column(db.String(50))
+    averagePricePaid = db.Column(db.Numeric(precision=2))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __init__(self, symbol, sharesOwned, averagePricePaid, user_id):
+        self.symbol=symbol
+        self.sharesOwned=sharesOwned
+        self.averagePricePaid=averagePricePaid
+        self.user_id=user_id
+
+    def __repr__(self):
+        return '<Stock %r>' % self.symbol
+
+    def toDict(self):
+        return dict({'symbol': self.symbol, 'sharesOwned': self.sharesOwned, 'averagePricePaid': self.averagePricePaid, 'user_id': self.user_id})
+
 @app.route('/api/<symbol>')
 def show_stock_basic_stats(symbol):
     start = datetime.now() - timedelta(days=100)
@@ -43,10 +75,22 @@ def show_stock_basic_stats(symbol):
     #print(resp)
     return jsonify(resp)
 
-@app.route('/api/portfolio/<id>')
+@app.route('/api/portfolio/<id>', methods=['GET'])
 def get_portfolio_by_id(id):
-    print('in route')
-    return jsonify(dict({'results':['AMZN', 'NLFX', 'PFE', 'WFC']}))
+    return jsonify(dict({'results':[x.symbol for x in Stock.query.filter_by(user_id=id).all()]}))
+
+@app.route('/api/portfolio/<id>', methods=['POST'])
+def update_portfolio_by_id(id):
+    if request.json['action']=='buy':
+        newStock = Stock(request.json['symbol'], 0, 0, id)
+        db.session.add(newStock)
+        db.session.commit()
+        return jsonify(dict({'results':[x.symbol for x in Stock.query.filter_by(user_id=id).all()]}))
+    if request.json['action']=='sell':
+        Stock.query.filter_by(symbol=request.json['symbol']).delete()
+        db.session.commit()
+        return jsonify(dict({'results':[x.symbol for x in Stock.query.filter_by(user_id=id).all()]}))
+
 
 @app.route('/')
 def send_welcome():

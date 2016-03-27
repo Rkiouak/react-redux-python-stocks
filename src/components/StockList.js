@@ -26,11 +26,6 @@ var StockList = React.createClass({
     }.bind(this))
   },
 
-  removeSymbol: function (stockToRemove) {
-    var stocks = this.state.stocks.filter((stock) => (stock !== stockToRemove))
-    this.setState({stocks: stocks})
-  },
-
   getSymbolDetails: function (stock) {
     this.setState({selectedStockSymbol: stock, haveStockData: false})
     if (this.state.selectedStockInfo.symbol !== stock) {
@@ -54,12 +49,33 @@ var StockList = React.createClass({
     }
   },
 
+  removeSymbol: function (stockToRemove) {
+    request.post('/api/portfolio/'+this.state.userId)
+    .send({'action':'sell', 'symbol':stockToRemove})
+        .end(function (error, resp, body) {
+          if(!error && resp.statusCode === 200) {
+            console.log(resp)
+            this.setState({stocks:resp.body.results})
+            this.refs.buySymbol.value = ''
+          } else {
+            console.log('error retrieving portfolio')
+          }
+    }.bind(this))
+  },
+
   handleBuy: function () {
     event.preventDefault();
-    var stocks = this.state.stocks.slice(0)
-    stocks.push(this.refs.buySymbol.value.trim())
-    this.setState({stocks: stocks})
-    this.refs.buySymbol.value = ''
+    request.post('/api/portfolio/'+this.state.userId)
+    .send({'action':'buy', 'symbol':this.refs.buySymbol.value.trim()})
+        .end(function (error, resp, body) {
+          if(!error && resp.statusCode === 200) {
+            console.log(resp)
+            this.setState({stocks:resp.body.results})
+            this.refs.buySymbol.value = ''
+          } else {
+            console.log('error retrieving portfolio')
+          }
+    }.bind(this))
   },
 
   render () {
