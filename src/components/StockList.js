@@ -85,7 +85,7 @@ var StockList = React.createClass({
         <NavigationBar/>
         <div style={{ padding: 10, paddingTop:2, margin:5, width:'100%' }}>
         <h4 style={{fontFamily:'Abril Fatface'}}>Stock List - Matt Rkiouak</h4>
-        <div style={{float:'top', width:'31%', paddingBottom:8}}>
+        <div style={{float:'top', width:'31%'}}>
           <input type='text' ref='buySymbol'></input>
           <Button type='submit' style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize='xsmall' bsStyle='success'>Buy</Button>
           <br/>
@@ -107,7 +107,7 @@ var StockList = React.createClass({
         </div>):(
         this.state.stocks.map((stock, count) =>
         this.state.selectedStockInfo.symbol==stock?(
-          <Panel header={stock} key={stock} style={{height:'100%', width:'67%', float:'left', fontFamily:'Abril Fatface'}}>
+          <Panel header={stock} key={stock} style={{height:'100%', width:'67%', float:'left', fontFamily:'Abril Fatface', marginTop:8}}>
                 <Button bsStyle='danger' bsSize='xsmall'
                   onClick={()=>{this.removeSymbol(stock)}}
                   style={{marginBottom:'4px'}}>Sell</Button>
