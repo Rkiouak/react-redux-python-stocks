@@ -119,11 +119,6 @@ var StockList = React.createClass({
                       <th>Mean</th>
                       <th>Standard Deviation</th>
                       <th>Lower 2 STD Boundary</th>
-                      <th>Upper 2 STD Boundary</th>
-                      <th>Yesterday's Price Change (Percent)</th>
-                      <th>Yesterday's Price Move (Absolute)</th>
-                      <th>Yesterday's Volume</th>
-                      <th>Average Volume</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -133,6 +128,21 @@ var StockList = React.createClass({
                       <td>{Math.round(this.state.selectedStockInfo.mean*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.std*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.lowerLimit*100)/100}</td>
+                    </tr>
+                  </tbody>
+                </Table>
+                <Table bordered style={{fontFamily:'Arial', height:'100%',width:'100%'}}>
+                  <thead>
+                    <tr>
+                      <th>Upper 2 STD Boundary</th>
+                      <th>Yesterday's Price Change (Percent)</th>
+                      <th>Yesterday's Price Move (Absolute)</th>
+                      <th>Yesterday's Volume</th>
+                      <th>Average Volume</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
                       <td>{Math.round(this.state.selectedStockInfo.upperLimit*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.yesterdayPriceMove*100)/100}</td>
                       <td>{Math.round(this.state.selectedStockInfo.yesterdayPriceMovePercent*100)/100}</td>

@@ -123,21 +123,21 @@ def create_app():
             return jsonify(dict({'results':[x.symbol for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
 
 
-    @app.route('/stocks')
+    @app.route('/')
     @login_required                                 # Use of @login_required decorator
     def send_welcome():
         return send_from_directory('dist', 'index.html')
 
-    @app.route('/')
-    def home_page():
-        return render_template_string("""
-            {% extends "base.html" %}
-            {% block content %}
-                <h2>Home page</h2>
-                <p><a href={{ url_for('home_page') }}>Home page</a> (anyone)</p>
-                <p><a href={{ 'stocks' }}>Stocks page</a> (login required)</p>
-            {% endblock %}
-            """)
+    #@app.route('/')
+    #def home_page():
+    #    return render_template_string("""
+    #        {% extends "base.html" %}
+    #        {% block content %}
+    #            <h2>Home page</h2>
+    #            <p><a href={{ url_for('home_page') }}>Home page</a> (anyone)</p>
+    #            <p><a href={{ 'stocks' }}>Stocks page</a> (login required)</p>
+    #        {% endblock %}
+    #        """)
 
     @app.route('/app.js')
     def send_app():
