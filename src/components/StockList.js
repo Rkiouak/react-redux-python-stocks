@@ -85,6 +85,16 @@ var StockList = React.createClass({
         <NavigationBar/>
         <div style={{ padding: 10, paddingTop:2, margin:5, width:'100%' }}>
         <h4 style={{fontFamily:'Abril Fatface'}}>Stock List - Matt Rkiouak</h4>
+        <div style={{float:'top', width:'31%', paddingBottom:8}}>
+          <input type='text' ref='buySymbol'></input>
+          <Button type='submit' style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize='xsmall' bsStyle='success'>Buy</Button>
+          <br/>
+          <h6 style={{fontFamily:'Abril Fatface'}}>Select:</h6><ButtonToolbar>
+            {this.state.stocks.map(stock =>
+              <Button bsSize='small' style={{marginBottom:'2px'}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
+            )}
+          </ButtonToolbar>
+        </div>
         {
           !this.state.selectedStockInfo.price&&
           this.state.haveStockData&&
@@ -194,16 +204,6 @@ var StockList = React.createClass({
                       />
                   </VictoryChart>):''}
             </Panel>):''))}
-            <div style={{float:'top', width:'31%'}}>
-              <input type='text' ref='buySymbol'></input>
-              <Button type='submit' style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize='xsmall' bsStyle='success'>Buy</Button>
-              <br/>
-              <h6 style={{fontFamily:'Abril Fatface'}}>Select:</h6><ButtonToolbar>
-                {this.state.stocks.map(stock =>
-                  <Button bsSize='small' style={{marginBottom:'2px'}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
-                )}
-              </ButtonToolbar>
-            </div>
           </div>
         </div>
         )
