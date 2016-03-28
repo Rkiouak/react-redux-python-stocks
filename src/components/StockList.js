@@ -103,15 +103,15 @@ var StockList = React.createClass({
               <Button bsSize='small' style={{marginBottom:'2px'}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
             )):'Enter a stock symbol and click \'Buy\'.'}
           </ButtonToolbar>
-          <Treemap
-            data={this.state.holdings}
-            width={450}
-            height={250}
-            textColor="#484848"
-            fontSize="12px"
-            title="Portfolio Allocation"
-            hoverAnimation={false}
-          />
+            <Treemap
+              data={this.state.holdings}
+              width={450}
+              height={250}
+              textColor="#484848"
+              fontSize="12px"
+              title="Portfolio Allocation"
+              hoverAnimation={false}
+            />
         </div>
         {
           !this.state.selectedStockInfo.price&&
@@ -125,7 +125,7 @@ var StockList = React.createClass({
         </div>):(
         this.state.stocks.map((stock, count) =>
         this.state.selectedStockInfo.symbol==stock?(
-          <Panel header={stock} key={stock} style={{height:'100%', width:'67%', float:'left', fontFamily:'Abril Fatface', marginTop:8}}>
+          <Panel header={stock} key={stock} style={{height:'100%', width:'60%', float:'left', fontFamily:'Abril Fatface', marginTop:8}}>
                 <Button bsStyle='danger' bsSize='xsmall'
                   onClick={()=>{this.removeSymbol(stock)}}
                   style={{marginBottom:'4px'}}>Sell</Button>

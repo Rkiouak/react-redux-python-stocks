@@ -47,7 +47,7 @@ def create_app():
     class Stock(db.Model):
         symbol = db.Column(db.String(16), primary_key=True)
         sharesOwned = db.Column(db.String(50))
-        averagePricePaid = db.Column(db.Numeric(precision=2))
+        averagePricePaid = db.Column(db.Integer)
         user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
 
         def __init__(self, symbol, sharesOwned, averagePricePaid, user_id):
@@ -112,7 +112,7 @@ def create_app():
     @login_required
     def get_portfolio_by_id():
         return jsonify(dict({'results':[{'symbol':x.symbol,
-                                        'holding':float(x.averagePricePaid)*float(x.sharesOwned)}
+                                        'holding':x.averagePricePaid/100.0*float(x.sharesOwned)}
                                          for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
 
     @app.route('/api/portfolio', methods=['POST'])
@@ -121,17 +121,17 @@ def create_app():
         if request.json['action']=='buy':
             stock = requests.get('http://finance.yahoo.com/webservice/v1/symbols/'+request.json['symbol']+'/quote?format=json&view=detail').json()
             print(stock)
-            newStock = Stock(request.json['symbol'], 1, stock['list']['resources'][0]['resource']['fields']['price'], current_user.id)
+            newStock = Stock(request.json['symbol'], 1, int(float(stock['list']['resources'][0]['resource']['fields']['price'])*100), current_user.id)
             db.session.add(newStock)
             db.session.commit()
             return jsonify(dict({'results':[{'symbol':x.symbol,
-                                'holding':float(x.averagePricePaid)*float(x.sharesOwned)}
+                                'holding':x.averagePricePaid/100.0*float(x.sharesOwned)}
                                  for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
         if request.json['action']=='sell':
             Stock.query.filter_by(symbol=request.json['symbol']).delete()
             db.session.commit()
             return jsonify(dict({'results':[{'symbol':x.symbol,
-                                'holding':float(x.averagePricePaid)*float(x.sharesOwned)}
+                                'holding':x.averagePricePaid/100.0*float(x.sharesOwned)}
                                  for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
 
 
