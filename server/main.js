@@ -18,17 +18,32 @@ const debug = _debug('app:server')
 const paths = config.utils_paths
 const app = new Koa()
 
-app.use(route.get('/api/:symbol',
+app.use(route.get('/api/portfolio',
   function*(symbol) {
-
-    var options = {
-      url: 'http://www.rkiouak.com/' + symbol,
-      headers: {'User-Agent': 'request'}
-    };
-    var response = yield request(options);
-    var body = JSON.parse(response.body);
-
-    this.body = body
+    this.body = {
+                  "results": [
+                    {
+                      "holding": 3.0,
+                      "symbol": "AMD"
+                    },
+                    {
+                      "holding": 32.0,
+                      "symbol": "ATVI"
+                    },
+                    {
+                      "holding": 14.0,
+                      "symbol": "BAC"
+                    },
+                    {
+                      "holding": 30.0,
+                      "symbol": "PFE"
+                    },
+                    {
+                      "holding": 49.0,
+                      "symbol": "WFC"
+                    }
+                  ]
+                }
   }));
 
 // Enable koa-proxy if it has been enabled in the config.

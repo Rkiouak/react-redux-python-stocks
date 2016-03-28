@@ -3,6 +3,8 @@ import request from 'superagent'
 import { Button, ButtonToolbar, Panel, Table } from 'react-bootstrap'
 import {VictoryChart, VictoryLine, VictoryAxis} from 'victory'
 import NavigationBar from './NavigationBar'
+import {Treemap} from 'react-d3'
+import NumberPicker from 'react-widgets/lib'
 
 var StockList = React.createClass({
 
@@ -17,7 +19,8 @@ var StockList = React.createClass({
     request.get('/api/portfolio').send().end(function(error, resp, body){
       if(!error && resp.statusCode === 200) {
         console.log(resp)
-        this.setState({stocks:resp.body.results})
+        this.setState({'stocks':resp.body.results.map((x)=>x.symbol),
+                      'holdings':resp.body.results.map((x)=>({'label':x.symbol, 'value':x.holding}))})
       } else {
         console.log('error retrieving portfolio')
       }
@@ -42,6 +45,7 @@ var StockList = React.createClass({
           this.setState({selectedStockInfo: resp.body ? resp.body : {}, haveStockData: true})
           this.setState({selectedStockHistorical: {data: resp.body['chart'], stock: stock}})
         } else {
+          this.setState({selectedStockInfo:{'symbol':stock}, haveStockData: true})
           console.log('Http request to yahoo threw error')
         }
       }.bind(this))
@@ -56,7 +60,8 @@ var StockList = React.createClass({
         .end(function (error, resp, body) {
           if(!error && resp.statusCode === 200) {
             console.log(resp)
-            this.setState({stocks:resp.body.results})
+            this.setState({'stocks':resp.body.results.map((x)=>x.symbol),
+                          'holdings':resp.body.results.map((x)=>({'label':x.symbol, 'value':x.holding}))})
             this.refs.buySymbol.value = ''
           } else {
             console.log('error retrieving portfolio')
@@ -71,7 +76,9 @@ var StockList = React.createClass({
         .end(function (error, resp, body) {
           if(!error && resp.statusCode === 200) {
             console.log(resp)
-            this.setState({stocks:resp.body.results})
+            console.log(resp.body.results.map((x)=>({'label':x.symbol, 'value':x.holding})))
+            this.setState({'stocks':resp.body.results.map((x)=>x.symbol),
+                          'holdings':resp.body.results.map((x)=>({'label':x.symbol, 'value':x.holding}))})
             this.refs.buySymbol.value = ''
           } else {
             console.log('error retrieving portfolio')
@@ -81,6 +88,7 @@ var StockList = React.createClass({
 
   render () {
     console.log("stocks: ", this.state.stocks)
+    console.log("holdings: ", this.state.holdings)
     return (
       <div>
         <NavigationBar/>
@@ -95,6 +103,15 @@ var StockList = React.createClass({
               <Button bsSize='small' style={{marginBottom:'2px'}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
             )):'Enter a stock symbol and click \'Buy\'.'}
           </ButtonToolbar>
+          <Treemap
+            data={this.state.holdings}
+            width={450}
+            height={250}
+            textColor="#484848"
+            fontSize="12px"
+            title="Portfolio Allocation"
+            hoverAnimation={false}
+          />
         </div>
         {
           !this.state.selectedStockInfo.price&&
@@ -104,7 +121,7 @@ var StockList = React.createClass({
             <Button bsStyle='danger' bsSize='xsmall'
             onClick={()=>{this.removeSymbol(this.state.selectedStockSymbol)}}
             style={{marginBottom:'4px'}}>Sell</Button>
-            <h5>No Such Stock</h5>
+          <h5>No Such Stock Or No Symbol Data Available</h5>
         </div>):(
         this.state.stocks.map((stock, count) =>
         this.state.selectedStockInfo.symbol==stock?(

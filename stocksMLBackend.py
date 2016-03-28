@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 import json
 from flask_user import current_user, login_required, UserManager, UserMixin, SQLAlchemyAdapter
 from flask_mail import Mail
+import requests
 
 def create_app():
     app = Flask(__name__)
@@ -110,20 +111,28 @@ def create_app():
     @app.route('/api/portfolio', methods=['GET'])
     @login_required
     def get_portfolio_by_id():
-        return jsonify(dict({'results':[x.symbol for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
+        return jsonify(dict({'results':[{'symbol':x.symbol,
+                                        'holding':float(x.averagePricePaid)*float(x.sharesOwned)}
+                                         for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
 
     @app.route('/api/portfolio', methods=['POST'])
     @login_required
     def update_portfolio_by_id():
         if request.json['action']=='buy':
-            newStock = Stock(request.json['symbol'], 0, 0, current_user.id)
+            stock = requests.get('http://finance.yahoo.com/webservice/v1/symbols/'+request.json['symbol']+'/quote?format=json&view=detail').json()
+            print(stock)
+            newStock = Stock(request.json['symbol'], 1, stock['list']['resources'][0]['resource']['fields']['price'], current_user.id)
             db.session.add(newStock)
             db.session.commit()
-            return jsonify(dict({'results':[x.symbol for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
+            return jsonify(dict({'results':[{'symbol':x.symbol,
+                                'holding':float(x.averagePricePaid)*float(x.sharesOwned)}
+                                 for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
         if request.json['action']=='sell':
             Stock.query.filter_by(symbol=request.json['symbol']).delete()
             db.session.commit()
-            return jsonify(dict({'results':[x.symbol for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
+            return jsonify(dict({'results':[{'symbol':x.symbol,
+                                'holding':float(x.averagePricePaid)*float(x.sharesOwned)}
+                                 for x in Stock.query.filter_by(user_id=current_user.id).all()]}))
 
 
     @app.route('/')
