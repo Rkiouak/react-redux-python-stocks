@@ -1,10 +1,15 @@
 import React from 'react'
 import request from 'superagent'
-import { Button, ButtonToolbar, Panel, Table } from 'react-bootstrap'
+import { Button, ButtonToolbar, Panel, Table, Grid, Col, Row } from 'react-bootstrap'
 import {VictoryChart, VictoryLine, VictoryAxis} from 'victory'
 import NavigationBar from './NavigationBar'
 import {Treemap} from 'react-d3'
-import NumberPicker from 'react-widgets/lib'
+import NumberPicker from 'react-widgets/lib/NumberPicker'
+import 'react-widgets/lib/less/react-widgets.less';
+
+var numberLocalizer = require('react-widgets/lib/localizers/simple-number')
+
+numberLocalizer();
 
 var StockList = React.createClass({
 
@@ -16,6 +21,7 @@ var StockList = React.createClass({
             haveStockData: false}
   },
   componentDidMount: function () {
+    numberLocalizer();
     request.get('/api/portfolio').send().end(function(error, resp, body){
       if(!error && resp.statusCode === 200) {
         console.log(resp)
@@ -61,7 +67,8 @@ var StockList = React.createClass({
           if(!error && resp.statusCode === 200) {
             console.log(resp)
             this.setState({'stocks':resp.body.results.map((x)=>x.symbol),
-                          'holdings':resp.body.results.map((x)=>({'label':x.symbol, 'value':x.holding}))})
+                          'holdings':resp.body.results.map((x)=>({'label':x.symbol,
+                                                                  'value':x.holding}))})
             this.refs.buySymbol.value = ''
           } else {
             console.log('error retrieving portfolio')
@@ -71,8 +78,9 @@ var StockList = React.createClass({
 
   handleBuy: function () {
     event.preventDefault();
+    console.log('in buy...')
     request.post('/api/portfolio')
-    .send({'action':'buy', 'symbol':this.refs.buySymbol.value.trim()})
+    .send({'action':'buy', 'symbol':this.refs.buySymbol.value.trim(), 'amtOfShares':this.state.amtOfShares})
         .end(function (error, resp, body) {
           if(!error && resp.statusCode === 200) {
             console.log(resp)
@@ -85,7 +93,9 @@ var StockList = React.createClass({
           }
     }.bind(this))
   },
-
+  numPickerChange: function(value) {
+    this.setState({amtOfShares:value})
+  },
   render () {
     console.log("stocks: ", this.state.stocks)
     console.log("holdings: ", this.state.holdings)
@@ -95,12 +105,13 @@ var StockList = React.createClass({
         <div style={{ padding: 10, paddingTop:2, margin:5, width:'100%' }}>
         <h4 style={{fontFamily:'Abril Fatface'}}>Stock List - Matt Rkiouak</h4>
         <div style={{float:'top', width:'31%'}}>
-          <input type='text' ref='buySymbol'></input>
+          <input type='text' placeholder='stock symbol e.g. "AAPL"' ref='buySymbol'></input><span> &nbsp;</span>
+          <NumberPicker defaultValue={1}onChange={this.numPickerChange} min={1} style={{width:'44%', height:'5%'}}/>
           <Button type='submit' style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize='xsmall' bsStyle='success'>Buy</Button>
           <br/>
           <h6 style={{fontFamily:'Abril Fatface'}}>Select:</h6><ButtonToolbar>
             {this.state.stocks.length>0?(this.state.stocks.map(stock =>
-              <Button bsSize='small' style={{marginBottom:'2px'}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
+              <Button bsSize='small' style={{marginBottom:2, marginTop:10}} key={stock} onClick={()=>{this.getSymbolDetails(stock)}}><a>{stock}</a></Button>
             )):'Enter a stock symbol and click \'Buy\'.'}
           </ButtonToolbar>
             <Treemap
@@ -130,50 +141,48 @@ var StockList = React.createClass({
                   onClick={()=>{this.removeSymbol(stock)}}
                   style={{marginBottom:'4px'}}>Sell</Button>
                   <h6><small>(adjusted close price over the past 20 Days)</small></h6>
-                <Table bordered style={{fontFamily:'Arial', height:'100%',width:'100%'}}>
-                  <thead>
-                    <tr>
-                      <th>Symbol</th>
-                      <th>Price</th>
-                      <th>20 Day Mean</th>
-                      <th>125 Day Mean</th>
-                      <th>20 Day Standard Deviation</th>
-                      <th>125 Day Standard Deviation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{this.state.selectedStockInfo.symbol}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.price * 100) /100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.mean*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.longMean*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.std*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.longStd*100)/100}</td>
-                    </tr>
-                  </tbody>
-                </Table>
-                <Table bordered style={{fontFamily:'Arial', height:'100%',width:'100%'}}>
-                  <thead>
-                    <tr>
-                      <th>Lower 2 STD Boundary</th>
-                      <th>Upper 2 STD Boundary</th>
-                      <th>Yesterday's Price Change (Percent)</th>
-                      <th>Yesterday's Price Move (Absolute)</th>
-                      <th>Yesterday's Volume</th>
-                      <th>Average Volume</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{Math.round(this.state.selectedStockInfo.lowerLimit*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.upperLimit*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.yesterdayPriceMove*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.yesterdayPriceMovePercent*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.lastDayVolume*100)/100}</td>
-                      <td>{Math.round(this.state.selectedStockInfo.avgVolume*100)/100}</td>
-                    </tr>
-                  </tbody>
-                </Table>
+                <Grid style={{fontFamily:'Arial', height:'100%',width:'100%'}}>
+                    <Row style={{border:'solid',
+                                 borderLeftWidth:1,
+                                 borderRightWidth:1,
+                                 borderTopWidth:1,
+                                 borderBottomWidth:1}}>
+                      <Col style={{border:'solid', borderWidth:0, borderRightWidth:1 }} md={2}>Symbol</Col>
+                      <Col style={{border:'solid', borderWidth:0, borderRightWidth:1 }}md={2}>Price</Col>
+                      <Col style={{border:'solid', borderWidth:0, borderRightWidth:1 }} md={2}>20 Day Mean</Col>
+                      <Col style={{border:'solid', borderWidth:0, borderRightWidth:1}}md={2}>125 Day Mean</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1}}>20 Day STD</Col>
+                      <Col md={2}>125 Day STD</Col>
+                    </Row>
+                    <Row style={{padding:10}}>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderLeftWidth:1, borderRightWidth:1 }}>{this.state.selectedStockInfo.symbol}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.price * 100) /100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.mean*100)/100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.longMean*100)/100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.std*100)/100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.longStd*100)/100}</Col>
+                    </Row>
+                    <Row style={{border:'solid',
+                                borderLeftWidth:1,
+                                borderRightWidth:1,
+                                borderTopWidth:1,
+                                borderBottomWidth:1}}>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>Lower 2 STD Boundary</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>Upper 2 STD Boundary</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>Yesterday's Price Change (Percent)</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>Yesterday's Price Move (Absolute)</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>Yesterday's Volume</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0 }}>Average Volume</Col>
+                    </Row>
+                    <Row style={{padding:10}}>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderLeftWidth:1, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.lowerLimit*100)/100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.upperLimit*100)/100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.yesterdayPriceMove*100)/100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.yesterdayPriceMovePercent*100)/100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.lastDayVolume*100)/100}</Col>
+                      <Col md={2} style={{border:'solid', borderWidth:0, borderRightWidth:1 }}>{Math.round(this.state.selectedStockInfo.avgVolume*100)/100}</Col>
+                    </Row>
+                </Grid>
                 <h6 style={{fontFamily:'Arial'}}> <small><i>(Consider contrarian Bollinger Band trading, where
                 if the current ask is above the upper bound line, sell & if the current price is below the lower bound line, buy.
               This outlook is more in line with stronger efficient market hypotheses and fundamental analysis)</i></small></h6>

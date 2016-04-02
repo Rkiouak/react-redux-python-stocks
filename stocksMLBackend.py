@@ -120,8 +120,7 @@ def create_app():
     def update_portfolio_by_id():
         if request.json['action']=='buy':
             stock = requests.get('http://finance.yahoo.com/webservice/v1/symbols/'+request.json['symbol']+'/quote?format=json&view=detail').json()
-            print(stock)
-            newStock = Stock(request.json['symbol'], 1, int(float(stock['list']['resources'][0]['resource']['fields']['price'])*100), current_user.id)
+            newStock = Stock(request.json['symbol'], request.json['amtOfShares'], int(float(stock['list']['resources'][0]['resource']['fields']['price'])*100), current_user.id)
             db.session.add(newStock)
             db.session.commit()
             return jsonify(dict({'results':[{'symbol':x.symbol,
@@ -140,17 +139,6 @@ def create_app():
     def send_welcome():
         return send_from_directory('dist', 'index.html')
 
-    #@app.route('/')
-    #def home_page():
-    #    return render_template_string("""
-    #        {% extends "base.html" %}
-    #        {% block content %}
-    #            <h2>Home page</h2>
-    #            <p><a href={{ url_for('home_page') }}>Home page</a> (anyone)</p>
-    #            <p><a href={{ 'stocks' }}>Stocks page</a> (login required)</p>
-    #        {% endblock %}
-    #        """)
-
     @app.route('/app.js')
     def send_app():
         return send_from_directory('dist', 'app.js')
@@ -166,7 +154,7 @@ def create_app():
     return app
 
 if __name__ == '__main__':
-    #app.run(host="0.0.0.0", port=int("3000"))
     app = create_app()
     app.debug = True
-    app.run()
+    app.run(host="0.0.0.0", port=int("3000"))
+    #app.run()
