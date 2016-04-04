@@ -4,7 +4,7 @@ import { Button, ButtonToolbar, Panel, Table, Grid, Col, Row } from 'react-boots
 import {VictoryChart, VictoryLine, VictoryAxis} from 'victory'
 import NavigationBar from './NavigationBar'
 import {Treemap} from 'react-d3'
-import NumberPicker from 'react-widgets/lib/NumberPicker'
+import {NumberPicker} from 'react-widgets'
 import 'react-widgets/lib/less/react-widgets.less';
 
 var numberLocalizer = require('react-widgets/lib/localizers/simple-number')
@@ -105,8 +105,8 @@ var StockList = React.createClass({
         <div style={{ padding: 10, paddingTop:2, margin:5, width:'100%' }}>
         <h4 style={{fontFamily:'Abril Fatface'}}>Stock List - Matt Rkiouak</h4>
         <div style={{float:'top', width:'31%'}}>
-          <input type='text' placeholder='stock symbol e.g. "AAPL"' ref='buySymbol'></input><span> &nbsp;</span>
-          <NumberPicker defaultValue={1}onChange={this.numPickerChange} min={1} style={{width:'44%', height:'5%'}}/>
+          <input style={{width:'100%'}} type='text' placeholder='stock symbol e.g. "AAPL"' ref='buySymbol'></input><span> &nbsp;</span>
+          (Need to figure out less/css issue with react-widgets module so arrows render)<br/>Number of Shares:<NumberPicker defaultValue={1} onChange={this.numPickerChange} min={1} style={{width:'44%', height:'5%'}}/>
           <Button type='submit' style={{marginLeft:'3px'}} onClick={this.handleBuy} bsSize='xsmall' bsStyle='success'>Buy</Button>
           <br/>
           <h6 style={{fontFamily:'Abril Fatface'}}>Select:</h6><ButtonToolbar>

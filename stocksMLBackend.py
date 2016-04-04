@@ -151,6 +151,14 @@ def create_app():
     def send_css():
         return send_from_directory('dist', 'app.32dc9945fd902da8ed2cccdc8703129f.css')
 
+    @app.route('/rw-widgets.ttf')
+    def get_react_widgets():
+        return send_from_directory('dist', 'rw-widgets.ttf')
+
+    @app.route('/dist/css/react-widgets.css')
+    def get_react_widgets_styles():
+        return send_from_directory('dist/css', 'react-widgets.css')
+        
     return app
 
 if __name__ == '__main__':
