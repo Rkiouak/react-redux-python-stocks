@@ -68,6 +68,19 @@ def create_app():
 
     db.create_all()
 
+    @app.route('/api/AlexaSkillTest')
+    def alexa_skill_test():
+
+        resp = {
+          "uid": "urn:uuid:1335c695-cfb8-4ebb-abbd-80da344efa6b",
+          "updateDate": "2016-11-14T00:00:00.0Z",
+          "titleText": "perspectiveM Test Flash Update Feed",
+          "mainText": "10 year treasury note yield is 2.254 %.",
+          "redirectionUrl": "http://rkiouak.com"
+        }
+
+        return jsonify(resp)
+
     @app.route('/api/<symbol>')
     @login_required                                 # Use of @login_required decorator
     def show_stock_basic_stats(symbol):
@@ -158,7 +171,7 @@ def create_app():
     @app.route('/dist/css/react-widgets.css')
     def get_react_widgets_styles():
         return send_from_directory('dist/css', 'react-widgets.css')
-        
+
     return app
 
 if __name__ == '__main__':
